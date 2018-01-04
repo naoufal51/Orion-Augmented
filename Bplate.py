@@ -48,10 +48,11 @@ and stores it in a 'processing friendly' array.
 
 
 class csi_matrix:
-    def __init__(self,csi):
-        self.csi_matrix(csi)
+    def __init__(self):
+        pass
 
-    def csi_matrix(self,csi):
+
+    def csi(self,csi):
 
         triangle = [1, 3, 6]
         broken_perm = 0
@@ -83,19 +84,21 @@ class csi_matrix:
 
         sm_1 = 1
 
-        sm_2_20 = np.matrix('1 1; 1 -1') / np.sqrt(2)
+        sm_2_20 = np.matrix([[1, 1], [1, -1]]) / np.sqrt(2)
 
-        sm_2_40 = np.matrix('1 1; 1j 1') / np.sqrt(2)
+        sm_2_40 = np.matrix([[1, 1],[1j, 1]]) / np.sqrt(2)
 
-        sm_3_20 = np.matrix('-2*np.pi/16 -2*np.pi/(80/33) 2*np.pi/(80/3);'
-                            '2*np.pi/(80/23) 2*np.pi/(48/13) 2*np.pi/(240/13);'
-                            '-2*np.pi/(80/13) 2*np.pi/(240/37) 2*np.pi/(48/13)')
+        sm_3_20 =np.matrix( [[-2 * np.pi / 16, -2 * np.pi / (80 / 33), 2 * np.pi / (80 / 3)],
+                   [2 * np.pi / (80 / 23), 2 * np.pi / (48 / 13), 2 * np.pi / (240 / 13)],
+                   [-2 * np.pi / (80 / 13), 2 * np.pi / (240 / 37), 2 * np.pi / (48 / 13)]])
+
         sm_3_20 = np.exp(1j * sm_3_20) / np.sqrt(3)
 
-        sm_3_40 = np.matrix('-2*np.pi/16 -2*np.pi/(80/13) 2*np.pi/(80/23);'
-                            '2*np.pi/(80/37) 2*np.pi/(48/11) 2*np.pi/(240/107);'
-                            '-2*np.pi/(80/7) 2*np.pi/(240/83) 2*np.pi/(48/11)')
-        sm_3_20 = np.exp(1j * sm_3_40) / np.sqrt(3)
+
+        sm_3_40 = np.matrix([[-2*np.pi/16, -2*np.pi/(80/13), 2*np.pi/(80/23)],
+                            [2*np.pi/(80/37), 2*np.pi/(48/11), 2*np.pi/(240/107)],
+                            [-2*np.pi/(80/7) ,2*np.pi/(240/83), 2*np.pi/(48/11)]])
+        sm_3_40 = np.exp(1j * sm_3_40) / np.sqrt(3)
 
         m = np.size(csi, 0)
         n = np.size(csi, 1)
@@ -120,7 +123,8 @@ class csi_matrix:
                 sm = sm_2_20
         for i in range(0, s):
             t = np.array(csi)[:, :, i]
-            ret[:, :, i] = np.transpose(np.transpose(t) * np.transpose(sm))
+            ret[:, :, i] = np.transpose(np.dot(np.transpose(t),sm.getH()))
+
         return ret
 
     #         ret[:, :, i] = np.matrix(np.squeeze(t)).T * np.matrix(sm_2_20).T
@@ -197,30 +201,25 @@ class iwlnl_struct:
         remainder = 0
         # make a list of 30 elements
         csi = [None] * 30
-        for i in range(0, self.nrs):
-            index += 3
-            print(index)
-            remainder = (index % 8)
-            Hx = np.matrix(np.zeros((self.Nrx, self.Ntx), complex))
-            for r in range(0, self.Nrx):
-
-                for t in range(0, self.Ntx):
-
-                    #            first = struct.unpack("B",raw_data[index/8])[0] >> remainder
-                    first = struct.unpack('B', bytes([raw_data[index // 8]]))[0] >> remainder
-                    print(bytes([raw_data[index // 8 + 1]]))
-                    second = (struct.unpack('B', bytes([raw_data[index // 8 + 1]]))[0] << (8 - remainder))
-
-
-                    tmp = (c_byte(first | second).value)
-                    real = (c_double(tmp).value)
-                    first = (struct.unpack('B', bytes([raw_data[index // 8 + 1]]))[0] >> remainder)
-                    second = (struct.unpack('B', bytes([raw_data[index // 8 + 2]]))[0] << (8 - remainder))
-                    tmp = (c_byte(first | second).value)
-                    imag = (c_double(tmp).value)
-                    index += 16
-                    Hx.itemset((r, t), complex(real, imag))
-            csi[i] = Hx
-            with open("test.txt", "a") as myfile:
-                myfile.write('1')
+        try:
+            for i in range(0, self.nrs):
+                index += 3
+                remainder = (index % 8)
+                Hx = np.matrix(np.zeros((self.Nrx, self.Ntx), complex))
+                for r in range(0, self.Nrx):
+                    for t in range(0, self.Ntx):
+                        #            first = struct.unpack("B",raw_data[index/8])[0] >> remainder
+                        first = struct.unpack('B', bytes([raw_data[index // 8]]))[0] >> remainder
+                        second = (struct.unpack('B', bytes([raw_data[index // 8 + 1]]))[0] << (8 - remainder))
+                        tmp = (c_byte(first | second).value)
+                        real = (c_double(tmp).value)
+                        first = (struct.unpack('B', bytes([raw_data[index // 8 + 1]]))[0] >> remainder)
+                        second = (struct.unpack('B', bytes([raw_data[index // 8 + 2]]))[0] << (8 - remainder))
+                        tmp = (c_byte(first | second).value)
+                        imag = (c_double(tmp).value)
+                        index += 16
+                        Hx.itemset((r, t), complex(real, imag))
+                csi[i] = Hx
+        except IndexError:
+            pass
         return csi

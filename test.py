@@ -1,2 +1,4 @@
 from Bplate import *
-csi=csi_matrix('file1.dat')
+csip=csi_matrix()
+c=csip.csi('file1.dat')
+print(c[:,:,0,0])
