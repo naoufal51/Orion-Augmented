@@ -19,33 +19,31 @@ and stores it in a 'processing friendly' array.
 
    """
 
-
-
-
 class csi_matrix:
 
-    def __init__(self, csi_corr, csi_target):
-             return self.final_matrix(csi_corr, csi_target)
-
+    def __init__(self):
+        pass
     def final_matrix(self, csi_corr, csi_target):
 
         csi_cr = self.csi(csi_corr)
         csi_tr = self.csi(csi_target)
         rl_dod = np.zeros(3)
+        rl_dod_b = np.zeros(3)
         rl_doa = np.zeros(3)
 
         for i in range(0, 3):
             rl_dod[i] = np.angle(csi_cr[0, i, 0, 0] * np.conjugate(csi_cr[1, i, 0, 0]))
+            rl_dod_b[i] = np.angle(csi_cr[0, i, 0, 0] * np.conjugate(csi_cr[2, i, 0, 0]))
         for i in range(1, 3):
             rl_doa[i] = np.angle(csi_cr[0, 0, 0, 0] * np.conjugate(csi_cr[0, i, 0, 0]))
-        csi_tro = np.zeros((2, 3, 1, np.size(csi_tr, 3)), dtype=complex)
-        for k in range(0, np.size(csi_tr, 3) - 1):
+        csi_tro = np.zeros((3, 3, 1, np.size(csi_tr, 3)), dtype=complex)
+        for k in range(0, np.size(csi_tr, 3)-1):
 
             csi_tro[0, :, 0, k] = csi_tr[0, :, 0, k]
 
             for i in range(0, 3):
                 csi_tro[1, i, 0, k] = csi_tr[1, i, 0, k] * np.exp(1j * rl_dod[i])
-
+                csi_tro[2, i, 0, k] = csi_tr[2, i, 0, k] * np.exp(1j * rl_dod_b[i])
             for i in range(1, 3):
                 csi_tro[:, i, 0, k] = csi_tro[:, i, 0, k] * np.exp(1j * rl_doa[i])
         return csi_tro

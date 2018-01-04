@@ -19,120 +19,27 @@ opts = {'dispmode': 0,
 'maxitercnt': 20,
 'maxcyclecnt': 250,
 'n1_fft': 1024,
-'n2_fft': 0,
+'n2_fft': 1024,
 'tol_em': 0,
 'tol_ls': 1e-6,
 'dynamicrange': 30}
 
 
-class Sage2d:
+class sage2d:
     def __init__(self):
         ...
-
-    def cost_func(self,ParamVal, ParamIndex, Theta_i, x_i,ModeFlag):
-        if (ParamIndex != 0):
-            Theta_i[ParamIndex] = ParamVal
-
-        # Get dimensions
-        [N1, N2] = size(x_i, 0), size(x_i, 1)
-
-        # Initialise variables
-        C = zeros([N1, N2])
-
-        f1 = Theta_i[1]
-        f2 = Theta_i[2]
-
-        # Setup domains
-
-        [n1,n2]=self.domain(N1,N2)
-
-        # Calculate signal model for given parameters
-        C = exp(-2j * pi * f1 *n1) * exp(-2j * pi * f2 *n2) * x_i
-
-        # Calculate discrete integral
-        if ModeFlag == 0:
-            # Return standard value
-            c = sum(sum(C))
-
-        elif ModeFlag == 1:
-
-            if ParamIndex == 2:
-                # Return inverted squared absolute value for initialisation
-                c = -sum(abs(sum(C)) ** 2)
-            else:
-                # Return inverted absolute value
-                c = -abs(sum(sum(C))) ** 2
-        else:
-            # Return inverted absolute value
-            c = -abs(sum(sum(C))) ** 2
-        return c
-
-
-    def ic(self,y, Theta, i, IC_Mode):
-        # Get Number of components
-        # CompCount = Theta.size(1)
-        CompCount = array([Theta]).T.shape[1]
-
-        # Select processing mode
-        if str.lower(IC_Mode) == 'parallel':
-            # Cancel all interferers
-            CompVector = arange(1, CompCount + 1)
-            # Apart from the considered component
-            CompVector = delete(CompVector, where(CompVector == i))
-
-        elif str.lower(IC_Mode) == 'serial':
-            # Cancel dominant interferers
-            CompVector = arange(1, i)
-
-        else:
-            print('Unknown IC-Mode !')
-
-        # Setup data
-        x_i = y
-
-        # Cancel components sequentially
-        for Index in CompVector:
-            # Cancel current component
-            x_i = x_i - self.model_func(Theta[:, Index], y.shape)
-        return x_i
-
-
-    def model_func(self,Theta, Dim):
-
-        # Initialise variables
-        beta = Theta[0]
-        f1 = Theta[1]
-        f2 = Theta[2]
-
-        N1 = Dim[0]
-        N2 = Dim[1]
-        # Setup domains
-
-        [n1,n2]=self.domain(N1,N2)
-
-
-        # Calculate signal model for given parameters
-        y = beta * exp(2j * pi * f1 * n1) * exp(2j * pi * f2 * n2)
-
-        return y
-
-    def nextpow2(self,i):
-        n = 1
-        while n < i: n *= 2
-        return n
-
     def sage(self,y, p):
         # Get dimensions
-
+        y=squeeze(y)
         [N1, N2] = y.shape
 
         # Setup internal parameters
         ModeFlag = 2
         ParamCount = 3
         if p > 1:
-            Theta = zeros(ParamCount, 2)
+            Theta = zeros((ParamCount, 2))
         else:
-            Theta = zeros(ParamCount, 1)
+            Theta = zeros((ParamCount, 1))
 
         DispMode = opts['dispmode']
         PlotMode = opts['plotmode']
@@ -187,7 +94,7 @@ class Sage2d:
             Theta[0, Comp_Index] = 1 / (N1 * N2) * self.cost_func([], 0, Theta[:, Comp_Index], x_i, 0)
 
             # Check component count
-            if abs(Theta[0, Comp_Index]) < 10 ^ (-DynamicRange / 20) * (abs(Theta[0, 0])):
+            if abs(Theta[0, Comp_Index]) < 10 ** (-DynamicRange / 20) * (abs(Theta[0, 0])):
                 Theta[:, Comp_Index] = zeros[ParamCount, 1]
                 print('Component %d Out of dynamic range' % Comp_Index)
                 sys.exit()
@@ -277,3 +184,97 @@ class Sage2d:
         self.n2= n2
         return self.n1, self.n2
 
+
+    def cost_func(self,ParamVal, ParamIndex, Theta_i, x_i,ModeFlag):
+        if (ParamIndex != 0):
+            Theta_i[ParamIndex] = ParamVal
+
+        # Get dimensions
+        [N1, N2] = size(x_i, 0), size(x_i, 1)
+
+        # Initialise variables
+        C = zeros([N1, N2])
+
+        f1 = Theta_i[1]
+        f2 = Theta_i[2]
+
+        # Setup domains
+
+        [n1,n2]=self.domain(N1,N2)
+
+        # Calculate signal model for given parameters
+        C = exp(-2j * pi * f1 *n1) * exp(-2j * pi * f2 *n2) * x_i
+
+        # Calculate discrete integral
+        if ModeFlag == 0:
+            # Return standard value
+            c = sum(sum(C))
+
+        elif ModeFlag == 1:
+
+            if ParamIndex == 2:
+                # Return inverted squared absolute value for initialisation
+                c = -sum(abs(sum(C)) ** 2)
+            else:
+                # Return inverted absolute value
+                c = -abs(sum(sum(C))) ** 2
+        else:
+            # Return inverted absolute value
+            c = -abs(sum(sum(C))) ** 2
+        return c
+
+
+    def ic(self,y, Theta, i, IC_Mode):
+        # Get Number of components
+        # CompCount = Theta.size(1)
+        CompCount = Theta.shape
+        CompCount=CompCount[1]
+        print('ok',CompCount)
+
+        # Select processing mode
+        if str.lower(IC_Mode) == 'parallel':
+            # Cancel all interferers
+            CompVector = arange(0, CompCount+1)
+            # Apart from the considered component
+            CompVector = delete(CompVector, where(CompVector == i))
+
+        elif str.lower(IC_Mode) == 'serial':
+            # Cancel dominant interferers
+            CompVector = arange(0, i)
+        else:
+            print('Unknown IC-Mode !')
+
+        # Setup data
+        x_i = y
+
+        # Cancel components sequentially
+        for Index in CompVector:
+            # Cancel current component
+            print('C',Index)
+            x_i = x_i - self.model_func(Theta[:, Index], y.shape)
+        return x_i
+
+
+    def model_func(self,Theta, Dim):
+
+        # Initialise variables
+        beta = Theta[0]
+        f1 = Theta[1]
+        f2 = Theta[2]
+
+        N1 = Dim[0]
+        N2 = Dim[1]
+        # Setup domains
+
+        [n1,n2]=self.domain(N1,N2)
+
+
+        # Calculate signal model for given parameters
+        y = beta * exp(2j * pi * f1 * n1) * exp(2j * pi * f2 * n2)
+
+        return y
+
+    def nextpow2(self,i):
+        n = 1
+        while n < i: n *= 2
+        return n
