@@ -1,5 +1,6 @@
 from numpy import *
 from scipy.optimize import fminbound
+import sys
 
 """
 sage2d.py
@@ -37,9 +38,9 @@ class sage2d:
         ModeFlag = 2
         ParamCount = 3
         if p > 1:
-            Theta = zeros((ParamCount, 2))
+            Theta = zeros((ParamCount, 2),dtype=complex)
         else:
-            Theta = zeros((ParamCount, 1))
+            Theta = zeros((ParamCount, 1),dtype=complex)
 
         DispMode = opts['dispmode']
         PlotMode = opts['plotmode']
@@ -97,11 +98,10 @@ class sage2d:
             if abs(Theta[0, Comp_Index]) < 10 ** (-DynamicRange / 20) * (abs(Theta[0, 0])):
                 Theta[:, Comp_Index] = zeros[ParamCount, 1]
                 print('Component %d Out of dynamic range' % Comp_Index)
-                sys.exit()
         # Process until parameter converges
-        CycleCtr = 0
-
-        while 1:
+        CycleCtr = 1
+        done=False
+        while not done:
 
             # Display EM-Cycle
 
@@ -111,23 +111,21 @@ class sage2d:
             for Comp_Index in range(0, p):
                 # Expectation Step: cancel all interferers
                 x_i = self.ic(y, Theta, Comp_Index, IC_Mode)
-
                 # Coordinate wise updating of the parameter vector
                 Theta[1, Comp_Index] = fminbound(self.cost_func, Theta[1, Comp_Index] - 1 / (CycleCtr * N1),
                 Theta[1, Comp_Index] + 1 / (CycleCtr * N1),
                 (1, Theta[:, Comp_Index], x_i, ModeFlag),
-                opts.tol_ls, opts.maxitercnt)
+                opts['tol_ls'], opts['maxitercnt'])
                 # Coordinate wise updating of the parameter vector
                 Theta[2, Comp_Index] = fminbound(self.cost_func, Theta[2, Comp_Index] - 1 / (CycleCtr * N2),
                 Theta[2, Comp_Index] + 1 / (CycleCtr * N2),
                 (1, Theta[:, Comp_Index], x_i, ModeFlag),
-                opts.tol_ls, opts.maxitercnt)
+                opts['tol_ls'], opts['maxitercnt'])
                 # Updating of the path weight
                 Theta[1, Comp_Index] = 1 / (N1 * N2) * self.cost_func([], 0, Theta[:, Comp_Index], x_i, 0)
-
                 # Check component count
-                if abs(Theta(0, Comp_Index)) < 10 ^ (-DynamicRange / 20) * (abs(Theta(0, 0))):
-                    Theta[:, Comp_Index] = zeros(ParamCount, 1)
+                if abs(Theta[0, Comp_Index]) < 10 **(-DynamicRange / 20) * (abs(Theta[0, 0])):
+                    Theta[:, Comp_Index] = zeros((ParamCount, 1))
                     # ddisp(DispMode, ['Component[',num2str(Comp_Index),']: Out of dynamic range'])
                 else:
                     # Display results for current iteration
@@ -139,7 +137,7 @@ class sage2d:
                 if all(abs(Theta - Theta_Old) < Theta_Threshold):
                     # ddisp(DispMode, ['Algorithm converged after 1+', num2str(CycleCtr),' EM-Cycles']);
                     # ddisp(DispMode, ['Mean convergence tolerance = ', num2str(sum(abs(Theta - Theta_Old)./p,2)')]);
-                    sys.exit()
+                    done=True
 
                 else:
                     # Store current parameter vector
@@ -152,10 +150,11 @@ class sage2d:
                 # Check cycle counter
                 if CycleCtr > MaxCycleCnt:
                     # ddisp(DispMode, ['Maximum number of EM-Cycles exceeded -> No convergence']);
+                    done=True
                     return
 
         # Return nonzeros components only
-        Index = find(Theta[0, :])
+        Index = nonzero(Theta[0, :])
         Theta = Theta[:, Index]
 
         # Return parameters in common form
@@ -193,7 +192,7 @@ class sage2d:
         [N1, N2] = size(x_i, 0), size(x_i, 1)
 
         # Initialise variables
-        C = zeros([N1, N2])
+        C = zeros((N1, N2),dtype=complex)
 
         f1 = Theta_i[1]
         f2 = Theta_i[2]
@@ -229,12 +228,11 @@ class sage2d:
         # CompCount = Theta.size(1)
         CompCount = Theta.shape
         CompCount=CompCount[1]
-        print('ok',CompCount)
 
         # Select processing mode
         if str.lower(IC_Mode) == 'parallel':
             # Cancel all interferers
-            CompVector = arange(0, CompCount+1)
+            CompVector = arange(0, CompCount)
             # Apart from the considered component
             CompVector = delete(CompVector, where(CompVector == i))
 

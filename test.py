@@ -5,8 +5,8 @@ p = 1
 c = csi_matrix()
 csi = c.final_matrix('file1.dat', 'file1.dat')
 s = sage2d()
-result = s.sage(csi[:, :, :, 1], p)
-
+[beta, f1, f2, CostFunction1, CostFunction2] = s.sage(csi[:, :, 0,0], p)
+print(beta,f2, f1)
 
 
     # def main():
