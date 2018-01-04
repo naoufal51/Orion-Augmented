@@ -60,9 +60,9 @@ class sage2d:
             Tol = [1 / (2 * N1_FFT), 1 / (2 * N1_FFT), 1 / (2 * N1_FFT)]
 
         # Initialise parameter matrix with initial guess
-        Theta_Old = zeros([ParamCount, p])
-        Theta = zeros([ParamCount, p])
-        Theta_Threshold = Tol * ones([1, p])
+        Theta_Old = zeros([ParamCount, p],dtype=complex)
+        Theta = zeros([ParamCount, p],dtype=complex)
+        Theta_Threshold = Tol * ones([1, p],dtype=complex)
         CycleCtr = 1
 
         # SAGE Initialisation using FFT evaluation
@@ -105,39 +105,40 @@ class sage2d:
 
             # Display EM-Cycle
 
-            print("EM-Cycle: %d" % CycleCtr)
+            # print("EM-Cycle: %d" % CycleCtr)
 
             # Process EM step for each component
             for Comp_Index in range(0, p):
+
                 # Expectation Step: cancel all interferers
                 x_i = self.ic(y, Theta, Comp_Index, IC_Mode)
+
                 # Coordinate wise updating of the parameter vector
-                Theta[1, Comp_Index] = fminbound(self.cost_func, Theta[1, Comp_Index] - 1 / (CycleCtr * N1),
-                Theta[1, Comp_Index] + 1 / (CycleCtr * N1),
-                (1, Theta[:, Comp_Index], x_i, ModeFlag),
-                opts['tol_ls'], opts['maxitercnt'])
+                Theta[1, Comp_Index] = fminbound(self.cost_func, Theta[1, Comp_Index] - 1 / (CycleCtr * N1),Theta[1, Comp_Index] + 1 / (CycleCtr * N1),(1, Theta[:, Comp_Index], x_i, ModeFlag),opts['tol_ls'], opts['maxitercnt'])
+
                 # Coordinate wise updating of the parameter vector
-                Theta[2, Comp_Index] = fminbound(self.cost_func, Theta[2, Comp_Index] - 1 / (CycleCtr * N2),
-                Theta[2, Comp_Index] + 1 / (CycleCtr * N2),
-                (1, Theta[:, Comp_Index], x_i, ModeFlag),
-                opts['tol_ls'], opts['maxitercnt'])
+                Theta[2, Comp_Index] = fminbound(self.cost_func, Theta[2, Comp_Index] - 1 / (CycleCtr * N2),Theta[2, Comp_Index] + 1 / (CycleCtr * N2),(1, Theta[:, Comp_Index], x_i, ModeFlag),opts['tol_ls'], opts['maxitercnt'])
+
                 # Updating of the path weight
-                Theta[1, Comp_Index] = 1 / (N1 * N2) * self.cost_func([], 0, Theta[:, Comp_Index], x_i, 0)
+                Theta[0, Comp_Index] = 1 / (N1 * N2) * self.cost_func([], 0, Theta[:, Comp_Index], x_i, 0)
                 # Check component count
                 if abs(Theta[0, Comp_Index]) < 10 **(-DynamicRange / 20) * (abs(Theta[0, 0])):
                     Theta[:, Comp_Index] = zeros((ParamCount, 1))
                     # ddisp(DispMode, ['Component[',num2str(Comp_Index),']: Out of dynamic range'])
+                    done = True
+
                 else:
                     # Display results for current iteration
 
                     # ddisp(DispMode, ['Component[',num2str(Comp_Index),']: ',num2str(abs(Theta(1,Comp_Index))),' ', num2str(Theta[2:end,Comp_Index].transpose)])
-                    print('ok')
+                    # print('ok')
+                    ...
 
                 # Check for convergence (Parameter of two iterations are nearly constant)
                 if all(abs(Theta - Theta_Old) < Theta_Threshold):
                     # ddisp(DispMode, ['Algorithm converged after 1+', num2str(CycleCtr),' EM-Cycles']);
                     # ddisp(DispMode, ['Mean convergence tolerance = ', num2str(sum(abs(Theta - Theta_Old)./p,2)')]);
-                    done=True
+                    done = True
 
                 else:
                     # Store current parameter vector
@@ -248,7 +249,6 @@ class sage2d:
         # Cancel components sequentially
         for Index in CompVector:
             # Cancel current component
-            print('C',Index)
             x_i = x_i - self.model_func(Theta[:, Index], y.shape)
         return x_i
 
