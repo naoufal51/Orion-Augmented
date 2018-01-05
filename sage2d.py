@@ -48,7 +48,6 @@ class sage2d:
         MaxCycleCnt = abs(opts['maxcyclecnt'])
         DynamicRange = abs(opts['dynamicrange'])
         N1_FFT = abs(opts['n1_fft'])
-
         if opts['n1_fft'] != 0:
             N2_FFT = abs(opts['n2_fft'])
         else:
@@ -73,7 +72,7 @@ class sage2d:
 
             # Calculate initialisation cost function
 
-            CostFunction1 = fft.fftshift((abs(fft.fft(x_i, N1_FFT, 1)) ** 2).sum(axis=1))
+            CostFunction1 = fft.fftshift((abs(fft.fft(x_i, N1_FFT, 1)) ** 2).sum(axis=0))
 
             # Estimate initial parameter (Maximization step)
 
@@ -117,7 +116,7 @@ class sage2d:
                 Theta[1, Comp_Index] = fminbound(self.cost_func, Theta[1, Comp_Index] - 1 / (CycleCtr * N1),Theta[1, Comp_Index] + 1 / (CycleCtr * N1),(1, Theta[:, Comp_Index], x_i, ModeFlag),opts['tol_ls'], opts['maxitercnt'])
 
                 # Coordinate wise updating of the parameter vector
-                Theta[2, Comp_Index] = fminbound(self.cost_func, Theta[2, Comp_Index] - 1 / (CycleCtr * N2),Theta[2, Comp_Index] + 1 / (CycleCtr * N2),(1, Theta[:, Comp_Index], x_i, ModeFlag),opts['tol_ls'], opts['maxitercnt'])
+                Theta[2, Comp_Index] = fminbound(self.cost_func, Theta[2, Comp_Index] - 1 / (CycleCtr * N2),Theta[2, Comp_Index] + 1 / (CycleCtr * N2),(2, Theta[:, Comp_Index], x_i, ModeFlag),opts['tol_ls'], opts['maxitercnt'])
 
                 # Updating of the path weight
                 Theta[0, Comp_Index] = 1 / (N1 * N2) * self.cost_func([], 0, Theta[:, Comp_Index], x_i, 0)
@@ -214,7 +213,7 @@ class sage2d:
 
             if ParamIndex == 2:
                 # Return inverted squared absolute value for initialisation
-                c = -sum(abs(sum(C)) ** 2)
+                c = -abs(sum(sum(C))) ** 2
             else:
                 # Return inverted absolute value
                 c = -abs(sum(sum(C))) ** 2
