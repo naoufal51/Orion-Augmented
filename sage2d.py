@@ -4,8 +4,6 @@ import sys
 
 """
 sage2d.py
-This class has methods that extracts CSI information from NETLINK data. Can also parse
-data from file, stored using log_to_file.c tool.
 
 """
 """
@@ -102,10 +100,6 @@ class sage2d:
         done=False
         while not done:
 
-            # Display EM-Cycle
-
-            # print("EM-Cycle: %d" % CycleCtr)
-
             # Process EM step for each component
             for Comp_Index in range(0, p):
 
@@ -120,23 +114,14 @@ class sage2d:
 
                 # Updating of the path weight
                 Theta[0, Comp_Index] = 1 / (N1 * N2) * self.cost_func([], 0, Theta[:, Comp_Index], x_i, 0)
+
                 # Check component count
                 if abs(Theta[0, Comp_Index]) < 10 **(-DynamicRange / 20) * (abs(Theta[0, 0])):
                     Theta[:, Comp_Index] = zeros((ParamCount, 1))
-                    # ddisp(DispMode, ['Component[',num2str(Comp_Index),']: Out of dynamic range'])
                     done = True
-
-                else:
-                    # Display results for current iteration
-
-                    # ddisp(DispMode, ['Component[',num2str(Comp_Index),']: ',num2str(abs(Theta(1,Comp_Index))),' ', num2str(Theta[2:end,Comp_Index].transpose)])
-                    # print('ok')
-                    ...
 
                 # Check for convergence (Parameter of two iterations are nearly constant)
                 if all(abs(Theta - Theta_Old) < Theta_Threshold):
-                    # ddisp(DispMode, ['Algorithm converged after 1+', num2str(CycleCtr),' EM-Cycles']);
-                    # ddisp(DispMode, ['Mean convergence tolerance = ', num2str(sum(abs(Theta - Theta_Old)./p,2)')]);
                     done = True
 
                 else:
@@ -149,7 +134,6 @@ class sage2d:
 
                 # Check cycle counter
                 if CycleCtr > MaxCycleCnt:
-                    # ddisp(DispMode, ['Maximum number of EM-Cycles exceeded -> No convergence']);
                     done=True
                     return
 
@@ -224,8 +208,7 @@ class sage2d:
 
 
     def ic(self,y, Theta, i, IC_Mode):
-        # Get Number of components
-        # CompCount = Theta.size(1)
+        # Get Number of component
         CompCount = Theta.shape
         CompCount=CompCount[1]
 
