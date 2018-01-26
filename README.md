@@ -1,5 +1,5 @@
 
-[![Binder](https://cloud.githubusercontent.com/assets/15954923/21268015/28638b76-c3ad-11e6-89d5-6096e56f924a.png)](https://mybinder.org/v2/gh/naoufal51/Orion-Augmented/master?filepath=notebook.ipynb)
+<center> [![Binder](https://cloud.githubusercontent.com/assets/15954923/21268015/28638b76-c3ad-11e6-89d5-6096e56f924a.png)](https://mybinder.org/v2/gh/naoufal51/Orion-Augmented/master?filepath=notebook.ipynb)</center>
 # Orion Augmented
 In order to run the notebook showcasing the python version (partial) of the code used for the experiments, please use mybinder or clone the repository and use jupyter on you local machine for launching the notebook.
 
