@@ -10,13 +10,11 @@ sage2d.py
 Options to use
 """
 
-opts = {'dispmode': 0,
-'plotmode': 0,
-'diagmode': 'off',
+opts = {
 'ic_mode': 'parallel',
 'maxfunceval': 50,
 'maxitercnt': 20,
-'maxcyclecnt': 250,
+'maxcyclecnt': 500,
 'n1_fft': 1024,
 'n2_fft': 1024,
 'tol_em': 0,
@@ -39,9 +37,6 @@ class sage2d:
             Theta = zeros((ParamCount, 2),dtype=complex)
         else:
             Theta = zeros((ParamCount, 1),dtype=complex)
-
-        DispMode = opts['dispmode']
-        PlotMode = opts['plotmode']
         IC_Mode = opts['ic_mode']
         MaxCycleCnt = abs(opts['maxcyclecnt'])
         DynamicRange = abs(opts['dynamicrange'])
@@ -56,6 +51,7 @@ class sage2d:
         else:
             Tol = [1 / (2 * N1_FFT), 1 / (2 * N1_FFT), 1 / (2 * N1_FFT)]
 
+
         # Initialise parameter matrix with initial guess
         Theta_Old = zeros([ParamCount, p],dtype=complex)
         Theta = zeros([ParamCount, p],dtype=complex)
@@ -64,13 +60,14 @@ class sage2d:
 
         # SAGE Initialisation using FFT evaluation
         for Comp_Index in range(0, p):
-
+            # print('y', y)
             # Expectation Step: cancel all interferers
             x_i = self.ic(y, Theta, Comp_Index, 'serial')
-
+            # print('x_i',x_i)
+            # print('x_i_shape', x_i.shape)
             # Calculate initialisation cost function
-
-            CostFunction1 = fft.fftshift((abs(fft.fft(x_i, N1_FFT, 1)) ** 2).sum(axis=0))
+            CostFunction1 = fft.fftshift((abs(fft.fft(x_i, N1_FFT, 0)) ** 2).sum(axis=1))
+            # print('cost1',CostFunction1)
 
             # Estimate initial parameter (Maximization step)
 
@@ -82,6 +79,7 @@ class sage2d:
 
             CostFunction2 = fft.fftshift(abs(fft.fft((exp(-2j * pi * (array([arange(0, N1)]).transpose() * ones([1, N2]) * Theta[1, Comp_Index])) * x_i),N2_FFT, 1).sum(axis=0)) ** 2)
 
+            # print('cost2', CostFunction2)
             # Estimate initial parameter (Maximization step)
 
             Dummy, Index = CostFunction2.max(0), CostFunction2.argmax(0)

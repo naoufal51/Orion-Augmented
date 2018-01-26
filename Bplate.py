@@ -60,7 +60,6 @@ class csi_matrix:
         num = np.size(c)
         op = np.zeros((m, n, s, num), dtype=np.complex_)
         for i in range(0, np.size(c) - 1):
-
             perm = c[i].perm
             perm= np.array(perm)
             Nrx = c[i].Nrx
@@ -71,8 +70,12 @@ class csi_matrix:
                 print('Invalid CSI File %s with Nrx=%d ',filename,Nrx)
             else:
                 c[i].csi=np.array(c[i].csi)
-                csio[:, :, :]=(c[i].csi)[:,perm-1,:]
-                ret = self.remove_sm(np.transpose(csio), c[i].rate)
+                csio[:, :, :] = (c[i].csi)[:,:,:]
+                r=np.swapaxes(csio,1,2)
+                new=np.moveaxis(r, 0, 2)
+                arr_o = np.zeros(new.shape, dtype=complex)
+                arr_o[:, perm - 1, :] = new[:, :, :]
+                ret = self.remove_sm(arr_o, c[i].rate)
                 op[:, :, :, i] = ret
         return op
 
@@ -123,7 +126,6 @@ class csi_matrix:
 
         return ret
 
-    #         ret[:, :, i] = np.matrix(np.squeeze(t)).T * np.matrix(sm_2_20).T
     def read_from_file(self,csi_log_file):
 
         with open(csi_log_file, 'rb') as f:
