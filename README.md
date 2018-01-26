@@ -5,7 +5,7 @@ In order to run the notebook showcasing the python version (partial) of the code
 
 Please click on the orion logo to launch the notebook or here : [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/naoufal51/Orion-Augmented/master?filepath=notebook.ipynb)
 
-We also provide code for CSI measurement using the experiment orchestration tool nepi-ng. It allows configuring the R2lab wireless nodes, run a transmission scenario between a transmitter and a receiver, and collect the CSI logs for angle of arrival (AoA) estimation. This code is tunable for more sophisticated transmission scenarios, for instance the usage of spatial multiplexing. https://github.com/parmentelat/r2lab/tree/public/demos. We also propose an explanatory video for running an AoA experiment scenario https://r2lab.inria.fr/tuto-900-youtube.md#AOA.
+We also provide code for CSI measurement using the experiment orchestration tool nepi-ng. It allows configuring the R2lab wireless nodes, run a transmission scenario between a transmitter and a receiver, and collect the CSI logs for angle of arrival (AoA) estimation. This code is tunable for more sophisticated transmission scenarios, for instance the usage of spatial multiplexing. https://github.com/parmentelat/r2lab-demos. We also propose an explanatory video for running an AoA experiment scenario https://r2lab.inria.fr/tuto-900-youtube.md#AOA.
 
 # Orion Augmented Orientation Estimation Using Commodity Wi-Fi
 
