@@ -1,2 +1,4 @@
 # Orion Augemented 
-A python implementation of the enhanced version of the Orion system for orientation estimation using Wi-Fi.(Work in progess)
+## Work in progess
+A python implementation of the enhanced version of the Orion system for orientation estimation using Wi-Fi.
+
