@@ -1,11 +1,11 @@
-from numpy import *
+"""
+sage2d.py
+Apply SAGE algotithm to estimate parameters
+"""
+import numpy as np
 from scipy.optimize import fminbound
 import sys
 
-"""
-sage2d.py
-
-"""
 """
 Options to use
 """
@@ -27,16 +27,16 @@ class sage2d:
         ...
     def sage(self,y, p):
         # Get dimensions
-        y=squeeze(y)
+        y=np.squeeze(y)
         [N1, N2] = y.shape
 
         # Setup internal parameters
         ModeFlag = 2
         ParamCount = 3
         if p > 1:
-            Theta = zeros((ParamCount, 2),dtype=complex)
+            Theta = np.zeros((ParamCount, 2),dtype=complex)
         else:
-            Theta = zeros((ParamCount, 1),dtype=complex)
+            Theta = np.zeros((ParamCount, 1),dtype=complex)
         IC_Mode = opts['ic_mode']
         MaxCycleCnt = abs(opts['maxcyclecnt'])
         DynamicRange = abs(opts['dynamicrange'])
@@ -53,21 +53,18 @@ class sage2d:
 
 
         # Initialise parameter matrix with initial guess
-        Theta_Old = zeros([ParamCount, p],dtype=complex)
-        Theta = zeros([ParamCount, p],dtype=complex)
-        Theta_Threshold = outer(Tol, ones((1, p), dtype=complex))
+        Theta_Old = np.zeros([ParamCount, p],dtype=complex)
+        Theta = np.zeros([ParamCount, p],dtype=complex)
+        Theta_Threshold = np.outer(Tol , np.ones((1, p),dtype=complex))
         CycleCtr = 1
 
         # SAGE Initialisation using FFT evaluation
         for Comp_Index in range(0, p):
-            # print('y', y)
             # Expectation Step: cancel all interferers
             x_i = self.ic(y, Theta, Comp_Index, 'serial')
-            # print('x_i',x_i)
-            # print('x_i_shape', x_i.shape)
+
             # Calculate initialisation cost function
-            CostFunction1 = fft.fftshift((abs(fft.fft(x_i, N1_FFT, 0)) ** 2).sum(axis=1))
-            # print('cost1',CostFunction1)
+            CostFunction1 = np.fft.fftshift((abs(np.fft.fft(x_i, N1_FFT, 0)) ** 2).sum(axis=1))
 
             # Estimate initial parameter (Maximization step)
 
@@ -77,9 +74,8 @@ class sage2d:
 
             # Calculate initialisation cost function
 
-            CostFunction2 = fft.fftshift(abs(fft.fft((exp(-2j * pi * (array([arange(0, N1)]).transpose() * ones([1, N2]) * Theta[1, Comp_Index])) * x_i),N2_FFT, 1).sum(axis=0)) ** 2)
+            CostFunction2 = np.fft.fftshift(abs(np.fft.fft((np.exp(-2j * np.pi * (np.array([np.arange(0, N1)]).transpose() * np.ones([1, N2]) * Theta[1, Comp_Index])) * x_i),N2_FFT, 1).sum(axis=0)) ** 2)
 
-            # print('cost2', CostFunction2)
             # Estimate initial parameter (Maximization step)
 
             Dummy, Index = CostFunction2.max(0), CostFunction2.argmax(0)
@@ -91,7 +87,7 @@ class sage2d:
 
             # Check component count
             if abs(Theta[0, Comp_Index]) < 10 ** (-DynamicRange / 20) * (abs(Theta[0, 0])):
-                Theta[:, Comp_Index] = zeros[ParamCount, 1]
+                Theta[:, Comp_Index] = np.squeeze(np.zeros([ParamCount, 1],dtype=complex))
                 print('Component %d Out of dynamic range' % Comp_Index)
         # Process until parameter converges
         CycleCtr = 1
@@ -115,11 +111,11 @@ class sage2d:
 
                 # Check component count
                 if abs(Theta[0, Comp_Index]) < 10 **(-DynamicRange / 20) * (abs(Theta[0, 0])):
-                    Theta[:, Comp_Index] = zeros((ParamCount, 1))
+                    Theta[:, Comp_Index] = np.squeeze(np.zeros([ParamCount, 1], dtype=complex))
                     done = True
 
                 # Check for convergence (Parameter of two iterations are nearly constant)
-                if all(abs(Theta - Theta_Old) < Theta_Threshold):
+                if np.all(abs(Theta - Theta_Old) < Theta_Threshold):
                     done = True
 
                 else:
@@ -136,7 +132,7 @@ class sage2d:
                     return
 
         # Return nonzeros components only
-        Index = nonzero(Theta[0, :])
+        Index = np.nonzero(Theta[0, :])
         Theta = Theta[:, Index]
 
         # Return parameters in common form
@@ -150,17 +146,17 @@ class sage2d:
     # Setup domains
 
         if N1 % 2 == 0 and N1 % 2 == 0:
-            n1 = array([arange(0, N1)]).transpose()
-            n2 = array([arange(0, N2)])
+            n1 = np.array([np.arange(0, N1)]).transpose()
+            n2 = np.array([np.arange(0, N2)])
         elif N1 % 2 == 0 and N1 % 2 != 0:
-            n1 = array([arange(0, N1)]).transpose()
-            n2 = array([arange(-floor(N2 / 2), floor(N2 / 2)+1)])
+            n1 = np.array([np.arange(0, N1)]).transpose()
+            n2 = np.array([np.arange(-np.floor(N2 / 2), np.floor(N2 / 2)+1)])
         elif N1 % 2 != 0 and N1 % 2 == 0:
-            n1 = array([arange(-floor(N1 / 2), floor(N1 / 2)+1)]).transpose()
-            n2 = array([arange(0, N2)])
+            n1 = np.array([np.arange(-np.floor(N1 / 2), np.floor(N1 / 2)+1)]).transpose()
+            n2 = np.array([np.arange(0, N2)])
         else:
-            n1 = array([arange(-floor(N1 / 2), floor(N1 / 2)+1)]).transpose()
-            n2 = array([arange(-floor(N2 / 2), floor(N2 / 2)+1)])
+            n1 = np.array([np.arange(-np.floor(N1 / 2), np.floor(N1 / 2)+1)]).transpose()
+            n2 = np.array([np.arange(-np.floor(N2 / 2), np.floor(N2 / 2)+1)])
         self.n1= n1
         self.n2= n2
         return self.n1, self.n2
@@ -171,10 +167,10 @@ class sage2d:
             Theta_i[ParamIndex] = ParamVal
 
         # Get dimensions
-        [N1, N2] = size(x_i, 0), size(x_i, 1)
+        [N1, N2] = np.size(x_i, 0), np.size(x_i, 1)
 
         # Initialise variables
-        C = zeros((N1, N2),dtype=complex)
+        C = np.zeros((N1, N2),dtype=complex)
 
         f1 = Theta_i[1]
         f2 = Theta_i[2]
@@ -184,7 +180,7 @@ class sage2d:
         [n1,n2]=self.domain(N1,N2)
 
         # Calculate signal model for given parameters
-        C = exp(-2j * pi * f1 *n1) * exp(-2j * pi * f2 *n2) * x_i
+        C = np.exp(-2j * np.pi * f1 *n1) * np.exp(-2j * np.pi * f2 *n2) * x_i
 
         # Calculate discrete integral
         if ModeFlag == 0:
@@ -213,13 +209,13 @@ class sage2d:
         # Select processing mode
         if str.lower(IC_Mode) == 'parallel':
             # Cancel all interferers
-            CompVector = arange(0, CompCount)
+            CompVector = np.arange(0, CompCount)
             # Apart from the considered component
-            CompVector = delete(CompVector, where(CompVector == i))
+            CompVector = np.delete(CompVector, np.where(CompVector == i))
 
         elif str.lower(IC_Mode) == 'serial':
             # Cancel dominant interferers
-            CompVector = arange(0, i)
+            CompVector = np.arange(0, i)
         else:
             print('Unknown IC-Mode !')
 
@@ -246,9 +242,8 @@ class sage2d:
 
         [n1,n2]=self.domain(N1,N2)
 
-
         # Calculate signal model for given parameters
-        y = beta * exp(2j * pi * f1 * n1) * exp(2j * pi * f2 * n2)
+        y = beta * np.exp(2j * np.pi * f1 * n1) * np.exp(2j * np.pi * f2 * n2)
 
         return y
 
