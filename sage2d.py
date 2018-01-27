@@ -55,7 +55,7 @@ class sage2d:
         # Initialise parameter matrix with initial guess
         Theta_Old = zeros([ParamCount, p],dtype=complex)
         Theta = zeros([ParamCount, p],dtype=complex)
-        Theta_Threshold = Tol * ones([1, p],dtype=complex)
+        Theta_Threshold = np.outer(Tol, np.ones((1, p), dtype=complex))
         CycleCtr = 1
 
         # SAGE Initialisation using FFT evaluation
