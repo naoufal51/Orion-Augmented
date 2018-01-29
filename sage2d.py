@@ -145,13 +145,13 @@ class sage2d:
     def domain(self,N1,N2):
     # Setup domains
 
-        if N1 % 2 == 0 and N1 % 2 == 0:
+        if N1 % 2 == 0 and N2 % 2 == 0:
             n1 = np.array([np.arange(0, N1)]).transpose()
             n2 = np.array([np.arange(0, N2)])
-        elif N1 % 2 == 0 and N1 % 2 != 0:
+        elif N1 % 2 == 0 and N2 % 2 != 0:
             n1 = np.array([np.arange(0, N1)]).transpose()
             n2 = np.array([np.arange(-np.floor(N2 / 2), np.floor(N2 / 2)+1)])
-        elif N1 % 2 != 0 and N1 % 2 == 0:
+        elif N1 % 2 != 0 and N2 % 2 == 0:
             n1 = np.array([np.arange(-np.floor(N1 / 2), np.floor(N1 / 2)+1)]).transpose()
             n2 = np.array([np.arange(0, N2)])
         else:
