@@ -1,6 +1,8 @@
 """
 sage2d.py
 Apply SAGE algotithm to estimate parameters
+S. Semmelrodt / 2003 
+M Mahfoudi / 2017
 """
 import numpy as np
 from scipy.optimize import fminbound
